@@ -1,0 +1,14 @@
+{
+  "teams": [
+    {"id":"A","region":"North","elo":1800,"seed":1},
+    {"id":"B","region":"North","elo":1650,"seed":2},
+    {"id":"C","region":"South","elo":1740,"seed":1},
+    {"id":"D","region":"South","elo":1570,"seed":2},
+    {"id":"E","region":"East","elo":1700,"seed":1},
+    {"id":"F","region":"East","elo":1600,"seed":2},
+    {"id":"G","region":"West","elo":1680,"seed":1},
+    {"id":"H","region":"West","elo":1510,"seed":2}
+  ],
+  "rules":{"format":"swiss","wins_to_advance":2,"losses_to_eliminate":2,"same_region":"first","avoid_rematches":true,"opening_seed_pairs":[],"bo1":1,"bo_decider":3},
+  "history":[],"actual_draw":[]
+}
