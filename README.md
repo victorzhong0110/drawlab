@@ -41,3 +41,15 @@ Rule options:
 **Important limitations:** There is no support yet for Swiss record-pool floating, byes, third-place matches, best-of rating calibration, home advantage, side selection, locked TV brackets, custom tie-breakers, dynamic Elo ratings, or conditional sequential-draw algorithms. Strict avoidance rules may generate states with no legal continuation; these are flagged as **failed simulations** and must be resolved by a competition-specific fallback policy, not silently discarded. Monte Carlo SE is given separately from Elo model uncertainty. The UI makes no network requests, and ratings are user-provided.
 
 **Interpretation:** Compare `actual - random baseline` separately at each round from the actual pre-draw state. Such conditional effects cannot be summed across rounds to get total draw luck. For a joint analysis, explicitly simulate the entire tournament from 0-0, comparing an agreed draw-policy strategy to a pure random baseline.
+
+## Drag-and-drop pairing editor
+
+The Streamlit app includes a browser-based draggable draw board (implemented as a local Streamlit custom component in `draw_editor/index.html`; no npm build or external JS needed). Drag one team onto another to exchange their places, or click two teams to swap. Moves are rejected if they violate current round record pools, seed restrictions, same-region avoidance, historical rematch avoidance, or the complete matching requirement. Use **Random legal draw** to construct a new legal pairing and **Reset** to restore the starting pairing. After editing, select **Analyze edited draw** to compare the chosen draw against a fresh random legal baseline, including per-region expected qualifiers and per-team advance probabilities. The original **Analyze all legal draws** functionality is still available for best/worst candidate analysis.
+
+A drag affects only the current draw; it does not simulate or change past game results. Enter complete historical match outcomes before editing a later-round draw. The editor is a local Streamlit custom component and loads without a third-party frontend service.
+
+## Auto-recalculating drag preview (v0.3)
+
+Enable **Automatically analyze after each legal drag** in the Streamlit sidebar. On each legal drag or click-to-swap, the app immediately computes the edited pairing against a random legal-draw baseline and updates a regional impact chart and team advancement probability table. Set preview sample counts separately from the higher-quality full analysis.
+
+An in-session bounded cache (100 results) is keyed by the complete input state, rules, seed and canonical pairing. Repeatedly visiting a pairing reuses its simulation. The random baseline is shared across all pairings in the same state. Changing teams, Elo, constraints, historical results, or random seed invalidates the relevant cache keys. The preview is low-sample Monte Carlo and is **not** a global-best claim; run the full analysis for candidate ranking and more reliable differences. A rough Monte Carlo standard error for the difference is reported.
