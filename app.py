@@ -6,6 +6,7 @@ import streamlit as st
 import pandas as pd
 from engine import Team,Rules,Tournament,NoLegalDraw
 from editor import draw_editor
+from elo_calibration import estimate_scale
 from localize import tr, options
 
 st.set_page_config(page_title='DrawLab — Tournament Draw Analyzer',layout='wide')
@@ -13,22 +14,32 @@ lang=st.sidebar.selectbox('Language / 语言',['中文','English'],key='drawlab_
 T=lambda text:tr(text,lang)
 st.title(T('DrawLab · Swiss & Knockout Draw Optimizer'))
 st.caption(T('Compare actual draws vs legal random baseline, best and worst candidates, and individual team advance probabilities.'))
+file=st.file_uploader(T('Upload a tournament JSON (teams, rules, history, actual_draw)'),type='json')
+if file is not None:
+    raw=file.getvalue()
+    fingerprint=hashlib.sha256(raw).hexdigest()
+    if st.session_state.get('uploaded_json_fingerprint') != fingerprint:
+        st.session_state['upload_cfg']=json.loads(raw.decode('utf-8'))
+        st.session_state['uploaded_json_fingerprint']=fingerprint
+cfg=st.session_state.get('upload_cfg')
+loaded_rules=cfg.get('rules',{}) if cfg else {}
 
 with st.sidebar:
     st.header(T('Tournament setup'))
-    fmt=st.selectbox(T('Tournament format'),['swiss','knockout'])
+    fmt=st.selectbox(T('Tournament format'),['swiss','knockout'],index=['swiss','knockout'].index(loaded_rules.get('format','swiss')))
     choices=[4,6,8,10,12,14,16,18,20,24,32] if fmt=='swiss' else [2,4,8,16,32]
-    n=st.selectbox(T('Starting teams'),choices,index=choices.index(16))
-    wins=st.number_input(T('Wins to qualify (Swiss)'),1,8,3,disabled=fmt!='swiss')
-    losses=st.number_input(T('Losses to eliminate (Swiss)'),1,8,3,disabled=fmt!='swiss')
-    same=st.selectbox(T('Same-region avoidance'),['off','first','always'],index=1,format_func=lambda v:T(v))
-    rematch=st.checkbox(T('Avoid past opponents'),value=True)
-    grouping=st.checkbox(T('Pair within the same W-L record'),value=True,disabled=fmt!='swiss')
-    seed_pairs=st.text_input(T('Opening seed pairs (optional)'),'',help=T('Example: 1-4,2-3. Leave blank for unrestricted round 1.'))
-    bo1=st.selectbox(T('Normal Swiss match'),['BO1','BO3','BO5'],index=0)
-    decider=st.selectbox(T('Qualification/elimination match'),['BO1','BO3','BO5'],index=1)
-    knockout_bo=st.selectbox(T('Knockout match'),['BO1','BO3','BO5'],index=2)
-    scale=st.number_input(T('Elo scale'),min_value=50.,max_value=2000.,value=400.)
+    n=st.selectbox(T('Starting teams'),choices,index=choices.index(len(cfg['teams']) if cfg and len(cfg['teams']) in choices else 16))
+    wins=st.number_input(T('Wins to qualify (Swiss)'),1,8,int(loaded_rules.get('wins_to_advance',3)),disabled=fmt!='swiss')
+    losses=st.number_input(T('Losses to eliminate (Swiss)'),1,8,int(loaded_rules.get('losses_to_eliminate',3)),disabled=fmt!='swiss')
+    same=st.selectbox(T('Same-region avoidance'),['off','first','always'],index=['off','first','always'].index(loaded_rules.get('same_region','first')),format_func=lambda v:T(v))
+    rematch=st.checkbox(T('Avoid past opponents'),value=bool(loaded_rules.get('avoid_rematches',True)))
+    grouping=st.checkbox(T('Pair within the same W-L record'),value=bool(loaded_rules.get('swiss_same_record',True)),disabled=fmt!='swiss')
+    seed_pairs=st.text_input(T('Opening seed pairs (optional)'),','.join(f'{a}-{b}' for a,b in loaded_rules.get('opening_seed_pairs',[])),help=T('Example: 1-4,2-3. Leave blank for unrestricted round 1.'))
+    bo1=st.selectbox(T('Normal Swiss match'),['BO1','BO3','BO5'],index=[1,3,5].index(int(loaded_rules.get('bo1',1))))
+    decider=st.selectbox(T('Qualification/elimination match'),['BO1','BO3','BO5'],index=[1,3,5].index(int(loaded_rules.get('bo_decider',3))))
+    knockout_bo=st.selectbox(T('Knockout match'),['BO1','BO3','BO5'],index=[1,3,5].index(int(loaded_rules.get('bo_knockout',5))))
+    scale=st.number_input(T('Elo scale'),min_value=50.,max_value=2000.,value=float(loaded_rules.get('rating_scale',400.)),key='manual_elo_scale')
+    auto_elo=st.checkbox('根据 JSON 自动估计 Elo scale / Auto-fit Elo scale',value=True)
     st.header(T('Analysis controls'))
     samples=st.number_input(T('Simulations per candidate'),100,50000,500,step=100)
     baseline_samples=st.number_input(T('Random baseline simulations'),100,100000,3000,step=500)
@@ -42,10 +53,12 @@ with st.sidebar:
     st.caption(T('Preview is approximate. Full analysis is still available below.'))
 
 st.markdown(T('### 1. Teams and regions'))
-file=st.file_uploader(T('Upload a tournament JSON (teams, rules, history, actual_draw)'),type='json')
-if file is not None:
-    cfg=json.load(file);st.session_state['upload_cfg']=cfg
-cfg=st.session_state.get('upload_cfg')
+if auto_elo and cfg:
+    fit=estimate_scale(cfg,default=float(cfg.get('rules',{}).get('rating_scale',scale)))
+    scale=fit.scale
+    st.info(('自动 Elo scale: ' if lang=='中文' else 'Auto Elo scale: ')+f'{scale:.2f} | {fit.observed} BO1/map samples | {fit.message}')
+elif auto_elo:
+    st.caption('自动 Elo scale：请先上传 JSON；当前使用手动值。' if lang=='中文' else 'Auto Elo scale: upload JSON first; manual scale in use.')
 rows=cfg['teams'] if cfg else [{'id':f'T{i+1:02d}',T('region'):f'R{i%4+1}','elo':1500.,'seed':i//4+1} for i in range(n)]
 if len(rows)!=n:st.info(f'Uploaded {len(rows)} teams; selecting {n} teams will slice or pad the table.')
 rows=(rows+[{'id':f'T{i+1:02d}',T('region'):'R1','elo':1500.,'seed':0} for i in range(len(rows),n)])[:n]

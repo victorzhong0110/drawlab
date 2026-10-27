@@ -60,3 +60,7 @@ An in-session bounded cache (100 results) is keyed by the complete input state, 
 In the Streamlit sidebar, choose **Language / 语言** → **中文** (default) or **English**. The drag-and-drop editor and the analytical table labels follow the selection. Team IDs, JSON schema, CLI flags and CSV import keys remain in English so switching language does not change calculation inputs.
 
 在左侧栏选择 **Language / 语言**，可切换**中文（默认）**或 **English**。拖拽编辑器、分析标签和多数提示会同步切换。JSON 字段和内部队伍 ID 不翻译，防止影响计算和数据兼容。
+
+## S16 example and automatic Elo-scale calibration
+
+Use `s16_worlds_2026.json` in the upload control. The app now loads team counts, seed rules, series rules, rematch avoidance, ratings and history from the file on first import. The Elo rating scale can be auto-fitted when JSON contains at least 20 **BO1/map-level** records under `calibration_matches` with keys `a`, `b`, `winner` (and optional `best_of: 1`, `weight`). Series outcomes without map-level results are skipped. Without sufficient training results the UI clearly reports fallback to the JSON's `rules.rating_scale`, normally 400; scores alone cannot identify a reasonable scale. The S16 file uses previously discussed LoL Pro Elo scores, **not a verified pre-event Elo snapshot**. The calibration helper estimates probability scale only, it does not re-estimate individual team Elo ratings.

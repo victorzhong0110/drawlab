@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "name": "LoL Worlds 2026 S16 Swiss Stage - pre-round counterfactual setup",
+    "rating_source": "LoL Pro Elo",
+    "rating_source_url": "https://lolproelo.com/rankings",
+    "rating_snapshot": "Previously used analysis snapshot; exact timestamp NOT verified; NOT historical pre-tournament ratings",
+    "rating_model": "Fixed effective Elo, 400 logistic scale; BO3 computed from BO1 assumption",
+    "notes": "All 16 teams begin 0-0; no completed games; seeded pool 1 vs 4, 2 vs 3. Calibrate against historical BO1/map results by adding calibration_matches, not future tournament results."
+  },
+  "teams": [
+    {
+      "id": "GEN",
+      "region": "LCK",
+      "elo": 2130,
+      "seed": 1
+    },
+    {
+      "id": "AL",
+      "region": "LPL",
+      "elo": 1816,
+      "seed": 1
+    },
+    {
+      "id": "TLAW",
+      "region": "LCS",
+      "elo": 1864,
+      "seed": 1
+    },
+    {
+      "id": "G2",
+      "region": "LEC",
+      "elo": 1863,
+      "seed": 1
+    },
+    {
+      "id": "LOS",
+      "region": "CBLOL",
+      "elo": 1653,
+      "seed": 2
+    },
+    {
+      "id": "TSW",
+      "region": "LCP",
+      "elo": 1654,
+      "seed": 2
+    },
+    {
+      "id": "HLE",
+      "region": "LCK",
+      "elo": 1988,
+      "seed": 2
+    },
+    {
+      "id": "BLG",
+      "region": "LPL",
+      "elo": 1947,
+      "seed": 2
+    },
+    {
+      "id": "LYON",
+      "region": "LCS",
+      "elo": 1876,
+      "seed": 3
+    },
+    {
+      "id": "MKOI",
+      "region": "LEC",
+      "elo": 1740,
+      "seed": 3
+    },
+    {
+      "id": "T1",
+      "region": "LCK",
+      "elo": 1939,
+      "seed": 3
+    },
+    {
+      "id": "TES",
+      "region": "LPL",
+      "elo": 1784,
+      "seed": 3
+    },
+    {
+      "id": "CFO",
+      "region": "LCP",
+      "elo": 1544,
+      "seed": 4
+    },
+    {
+      "id": "IG",
+      "region": "LPL",
+      "elo": 1857,
+      "seed": 4
+    },
+    {
+      "id": "DK",
+      "region": "LCK",
+      "elo": 1970,
+      "seed": 4
+    },
+    {
+      "id": "KC",
+      "region": "LEC",
+      "elo": 1802,
+      "seed": 4
+    }
+  ],
+  "rules": {
+    "format": "swiss",
+    "wins_to_advance": 3,
+    "losses_to_eliminate": 3,
+    "same_region": "first",
+    "avoid_rematches": true,
+    "swiss_same_record": true,
+    "opening_seed_pairs": [
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "bo1": 1,
+    "bo_decider": 3,
+    "bo_knockout": 5,
+    "rating_scale": 400.0
+  },
+  "history": [],
+  "calibration_matches": [],
+  "actual_draw": []
+}
