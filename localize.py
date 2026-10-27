@@ -1,0 +1,52 @@
+"""Small bilingual UI translation helper. All stored state and data keys remain English."""
+ZH = {
+'DrawLab · Swiss & Knockout Draw Optimizer':'DrawLab · 瑞士轮与淘汰赛抽签优化器',
+'Compare actual draws vs legal random baseline, best and worst candidates, and individual team advance probabilities.':'比较实际抽签、合法随机基准、最优与最差候选及各队晋级概率。',
+'Tournament setup':'赛事设置','Tournament format':'赛事类型','Starting teams':'初始队伍数量',
+'Wins to qualify (Swiss)':'晋级所需胜场（瑞士轮）','Losses to eliminate (Swiss)':'淘汰所需败场（瑞士轮）',
+'Same-region avoidance':'同赛区规避','Avoid past opponents':'禁止重复交手','Pair within the same W-L record':'仅同战绩池配对',
+'Opening seed pairs (optional)':'首轮种子池配对（可选）','Example: 1-4,2-3. Leave blank for unrestricted round 1.':'例如 1-4,2-3；留空表示首轮不限制种子池。',
+'Normal Swiss match':'瑞士轮普通比赛','Qualification/elimination match':'晋级/淘汰赛','Knockout match':'淘汰赛比赛',
+'Elo scale':'Elo 参数','Analysis controls':'分析参数','Simulations per candidate':'每套候选方案模拟次数',
+'Random baseline simulations':'随机基准模拟次数','Enumeration cap':'穷举上限','Fallback: sampled candidate draws':'超限时抽样候选签表数',
+'Random seed':'随机种子','Live draw preview':'实时抽签预览','Automatically analyze after each legal drag':'每次合法拖拽后自动分析',
+'Preview simulations per draw':'每套签表预览次数','Preview baseline simulations':'随机基准预览次数',
+'Preview is approximate. Full analysis is still available below.':'实时预览为近似值；下方仍可执行完整精度分析。',
+'### 1. Teams and regions':'### 1. 队伍与赛区','Upload a tournament JSON (teams, rules, history, actual_draw)':'上传赛事 JSON（队伍、规则、历史、实际抽签）',
+'### 2. Past results / current state':'### 2. 历史赛果与当前状态',
+'Enter complete chronological rounds as JSON. Each completed round must include every active team exactly once. Empty list starts from 0-0.':'按时间顺序填写完整轮次 JSON；每轮每支参赛队伍须恰好出现一次。空列表表示从 0-0 开始。',
+'History events':'历史赛果 JSON','### 3. Real/observed draw (optional)':'### 3. 现实签表（可选）',
+'Pairs [ [team_id, team_id], ... ]':'配对列表 [ [队伍ID, 队伍ID], ... ]',
+'### 4. Drag-and-drop draw editor':'### 4. 拖拽对阵编辑器',
+'Drag a team onto another team to swap their positions, or click two teams. Invalid swaps are blocked. This works from any round based on the entered history.':'拖动一支队伍到另一支队伍上即可交换，或依次点击两队。非法交换会被阻止；可用于任意已录入历史状态。',
+'The supplied actual draw is invalid; the editor starts with a random legal draw.':'填写的实际签表非法，编辑器已改用随机合法签表。',
+'Edited pairing is legal — ready to analyze.':'编辑后的签表合法，可以分析。','Edited pairing is illegal; no analysis will be run on it.':'编辑后的签表非法，不会执行分析。',
+'Editor is showing the current pairing. Drag a team to change opponents.':'当前显示初始签表；拖动队伍可以更换对手。',
+'Tournament is complete: no remaining draw.':'赛事已结束，无剩余抽签。',
+'### Live impact — edited draw vs random baseline':'### 实时影响：编辑签表 vs 随机基准',
+'Automatically refreshed on valid drag. Cached results are reused when you return to an earlier pairing. Estimates are preliminary; use full analysis for higher precision.':'合法拖拽后自动刷新；返回先前签表时复用缓存。预览为近似估计，请用完整分析提高精度。',
+'Team advancement probabilities for edited draw':'编辑签表下各队晋级概率',
+'Analyze edited draw':'分析当前编辑签表','Analyze all legal draws':'分析全部合法签表',
+'Running future tournament simulations...':'正在模拟后续赛事…',
+'### Region outcomes':'### 各赛区结果','Inspect region':'查看赛区',
+'### Best, worst, and observed draws':'### 最优、最差与现实签表',
+'Best':'最优','Worst':'最差','Edited / actual':'编辑／现实',
+'Expected qualifying teams':'期望晋级队数','No actual draw provided':'未提供现实签表',
+'### Candidate ranking':'### 候选方案排名','Download full candidate CSV':'下载候选结果 CSV',
+'### Team qualifying probabilities':'### 各队晋级概率',
+'Region':'赛区','Edited expected':'编辑签表期望','Random expected':'随机基准期望',
+'Impact':'影响','MC SE (difference, approx)':'蒙特卡洛标准误（差值近似）',
+'Team':'队伍','Edited':'编辑签表','Random':'随机基准',
+'Random baseline':'随机基准','Best candidate':'最优候选','Worst candidate':'最差候选',
+'Best minus random':'最优减随机','Actual':'实际签表','Actual minus random':'实际减随机','Actual SE':'实际标准误',
+'rank':'排名','expected':'期望值','matches':'对阵','team':'队伍','region':'赛区','baseline':'随机基准',
+'best':'最优','worst':'最差','actual':'实际签表','SE':'标准误',
+'Some simulation paths had no legal next draw. Estimates condition on completed runs; inspect the rule fallback.':'部分模拟路径下一轮无合法配对；结果仅基于完成的路径，请检查规则回退机制。',
+'Live preview disabled: illegal draw.':'实时预览停止：签表非法。',
+}
+ZH.update({'swiss':'瑞士轮','knockout':'单败淘汰赛','off':'关闭','first':'仅首轮','always':'全程'})
+def tr(value, lang):
+    return ZH.get(value,value) if lang == '中文' else value
+
+def options(values,lang):
+    return lambda v:tr(v,lang)

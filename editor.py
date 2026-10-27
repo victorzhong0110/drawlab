@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 
 _component = components.declare_component('drawlab_drag_editor', path=str(Path(__file__).parent / 'draw_editor'))
 
-def draw_editor(t, s, initial, key='drawlab_editor'):
+def draw_editor(t, s, initial, key='drawlab_editor', lang='中文'):
     """Return {'pairs': [[id,id],...], 'change_id': number} after edits."""
     active = t.active(s)
     groups = {}
@@ -22,4 +22,4 @@ def draw_editor(t, s, initial, key='drawlab_editor'):
     pairs=[[t.teams[a].id,t.teams[b].id] for a,b in initial]
     identity=json.dumps({'pairs':pairs,'groups':groups,'allowed':allowed},sort_keys=True)
     fingerprint=hashlib.sha256(identity.encode()).hexdigest()[:20]
-    return _component(teams=[t.teams[i].id for i in active],info={t.teams[i].id:{'region':t.teams[i].region} for i in active},groups=groups,allowed=allowed,pairs=pairs,fingerprint=fingerprint,key=key,default=None)
+    return _component(teams=[t.teams[i].id for i in active],info={t.teams[i].id:{'region':t.teams[i].region} for i in active},groups=groups,allowed=allowed,pairs=pairs,fingerprint=fingerprint,language=lang,key=key,default=None)

@@ -53,3 +53,10 @@ A drag affects only the current draw; it does not simulate or change past game r
 Enable **Automatically analyze after each legal drag** in the Streamlit sidebar. On each legal drag or click-to-swap, the app immediately computes the edited pairing against a random legal-draw baseline and updates a regional impact chart and team advancement probability table. Set preview sample counts separately from the higher-quality full analysis.
 
 An in-session bounded cache (100 results) is keyed by the complete input state, rules, seed and canonical pairing. Repeatedly visiting a pairing reuses its simulation. The random baseline is shared across all pairings in the same state. Changing teams, Elo, constraints, historical results, or random seed invalidates the relevant cache keys. The preview is low-sample Monte Carlo and is **not** a global-best claim; run the full analysis for candidate ranking and more reliable differences. A rough Monte Carlo standard error for the difference is reported.
+
+
+## Bilingual interface / 中英文界面
+
+In the Streamlit sidebar, choose **Language / 语言** → **中文** (default) or **English**. The drag-and-drop editor and the analytical table labels follow the selection. Team IDs, JSON schema, CLI flags and CSV import keys remain in English so switching language does not change calculation inputs.
+
+在左侧栏选择 **Language / 语言**，可切换**中文（默认）**或 **English**。拖拽编辑器、分析标签和多数提示会同步切换。JSON 字段和内部队伍 ID 不翻译，防止影响计算和数据兼容。

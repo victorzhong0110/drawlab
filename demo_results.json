@@ -1,0 +1,318 @@
+{
+  "config": "demo.json",
+  "round": 1,
+  "candidates": 60,
+  "exhaustive": true,
+  "baseline": {
+    "region_expected": {
+      "East": 0.9125,
+      "North": 1.375,
+      "South": 1.025,
+      "West": 0.6875
+    },
+    "region_se": {
+      "East": 0.0733010700808658,
+      "North": 0.06931585316505885,
+      "South": 0.061173421516210795,
+      "West": 0.06273393718713978
+    },
+    "team_advance": {
+      "A": 0.825,
+      "B": 0.55,
+      "C": 0.8,
+      "D": 0.225,
+      "E": 0.6,
+      "F": 0.3125,
+      "G": 0.55,
+      "H": 0.1375
+    },
+    "valid": 80,
+    "failed": 0
+  },
+  "regions": {
+    "East": {
+      "best": {
+        "expected": 1.05,
+        "se": 0.1057709790065309,
+        "draw": [
+          [
+            "A",
+            "G"
+          ],
+          [
+            "B",
+            "H"
+          ],
+          [
+            "C",
+            "E"
+          ],
+          [
+            "D",
+            "F"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.75,
+          "B": 0.575,
+          "C": 0.85,
+          "D": 0.2,
+          "E": 0.675,
+          "F": 0.375,
+          "G": 0.525,
+          "H": 0.05
+        },
+        "failed": 0
+      },
+      "worst": {
+        "expected": 0.725,
+        "se": 0.09345787821259371,
+        "draw": [
+          [
+            "A",
+            "F"
+          ],
+          [
+            "B",
+            "D"
+          ],
+          [
+            "C",
+            "H"
+          ],
+          [
+            "E",
+            "G"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.9,
+          "B": 0.5,
+          "C": 0.775,
+          "D": 0.35,
+          "E": 0.425,
+          "F": 0.3,
+          "G": 0.55,
+          "H": 0.2
+        },
+        "failed": 0
+      },
+      "mean_of_evaluated_draws": 0.885,
+      "actual": null,
+      "actual_minus_random": null
+    },
+    "North": {
+      "best": {
+        "expected": 1.475,
+        "se": 0.07895805848676873,
+        "draw": [
+          [
+            "A",
+            "D"
+          ],
+          [
+            "B",
+            "C"
+          ],
+          [
+            "E",
+            "H"
+          ],
+          [
+            "F",
+            "G"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.95,
+          "B": 0.525,
+          "C": 0.7,
+          "D": 0.175,
+          "E": 0.625,
+          "F": 0.3,
+          "G": 0.55,
+          "H": 0.175
+        },
+        "failed": 0
+      },
+      "worst": {
+        "expected": 1.275,
+        "se": 0.08651228236499141,
+        "draw": [
+          [
+            "A",
+            "G"
+          ],
+          [
+            "B",
+            "F"
+          ],
+          [
+            "C",
+            "E"
+          ],
+          [
+            "D",
+            "H"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.75,
+          "B": 0.525,
+          "C": 0.85,
+          "D": 0.275,
+          "E": 0.625,
+          "F": 0.3,
+          "G": 0.55,
+          "H": 0.125
+        },
+        "failed": 0
+      },
+      "mean_of_evaluated_draws": 1.38125,
+      "actual": null,
+      "actual_minus_random": null
+    },
+    "South": {
+      "best": {
+        "expected": 1.125,
+        "se": 0.0879452954966893,
+        "draw": [
+          [
+            "A",
+            "C"
+          ],
+          [
+            "B",
+            "H"
+          ],
+          [
+            "D",
+            "F"
+          ],
+          [
+            "E",
+            "G"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.75,
+          "B": 0.6,
+          "C": 0.85,
+          "D": 0.275,
+          "E": 0.5,
+          "F": 0.35,
+          "G": 0.625,
+          "H": 0.05
+        },
+        "failed": 0
+      },
+      "worst": {
+        "expected": 0.875,
+        "se": 0.09478594305064438,
+        "draw": [
+          [
+            "A",
+            "D"
+          ],
+          [
+            "B",
+            "C"
+          ],
+          [
+            "E",
+            "H"
+          ],
+          [
+            "F",
+            "G"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.95,
+          "B": 0.525,
+          "C": 0.7,
+          "D": 0.175,
+          "E": 0.625,
+          "F": 0.3,
+          "G": 0.55,
+          "H": 0.175
+        },
+        "failed": 0
+      },
+      "mean_of_evaluated_draws": 1.0270833333333333,
+      "actual": null,
+      "actual_minus_random": null
+    },
+    "West": {
+      "best": {
+        "expected": 0.85,
+        "se": 0.09048480535426931,
+        "draw": [
+          [
+            "A",
+            "E"
+          ],
+          [
+            "B",
+            "C"
+          ],
+          [
+            "D",
+            "H"
+          ],
+          [
+            "F",
+            "G"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.8,
+          "B": 0.475,
+          "C": 0.8,
+          "D": 0.25,
+          "E": 0.45,
+          "F": 0.375,
+          "G": 0.65,
+          "H": 0.2
+        },
+        "failed": 0
+      },
+      "worst": {
+        "expected": 0.575,
+        "se": 0.07816249100431741,
+        "draw": [
+          [
+            "A",
+            "G"
+          ],
+          [
+            "B",
+            "H"
+          ],
+          [
+            "C",
+            "E"
+          ],
+          [
+            "D",
+            "F"
+          ]
+        ],
+        "team_probabilities": {
+          "A": 0.75,
+          "B": 0.575,
+          "C": 0.85,
+          "D": 0.2,
+          "E": 0.675,
+          "F": 0.375,
+          "G": 0.525,
+          "H": 0.05
+        },
+        "failed": 0
+      },
+      "mean_of_evaluated_draws": 0.7066666666666667,
+      "actual": null,
+      "actual_minus_random": null
+    }
+  }
+}

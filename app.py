@@ -6,57 +6,60 @@ import streamlit as st
 import pandas as pd
 from engine import Team,Rules,Tournament,NoLegalDraw
 from editor import draw_editor
+from localize import tr, options
 
 st.set_page_config(page_title='DrawLab — Tournament Draw Analyzer',layout='wide')
-st.title('DrawLab · Swiss & Knockout Draw Optimizer')
-st.caption('Compare actual draws vs legal random baseline, best and worst candidates, and individual team advance probabilities.')
+lang=st.sidebar.selectbox('Language / 语言',['中文','English'],key='drawlab_language')
+T=lambda text:tr(text,lang)
+st.title(T('DrawLab · Swiss & Knockout Draw Optimizer'))
+st.caption(T('Compare actual draws vs legal random baseline, best and worst candidates, and individual team advance probabilities.'))
 
 with st.sidebar:
-    st.header('Tournament setup')
-    fmt=st.selectbox('Tournament format',['swiss','knockout'])
+    st.header(T('Tournament setup'))
+    fmt=st.selectbox(T('Tournament format'),['swiss','knockout'])
     choices=[4,6,8,10,12,14,16,18,20,24,32] if fmt=='swiss' else [2,4,8,16,32]
-    n=st.selectbox('Starting teams',choices,index=choices.index(16))
-    wins=st.number_input('Wins to qualify (Swiss)',1,8,3,disabled=fmt!='swiss')
-    losses=st.number_input('Losses to eliminate (Swiss)',1,8,3,disabled=fmt!='swiss')
-    same=st.selectbox('Same-region avoidance',['off','first','always'],index=1)
-    rematch=st.checkbox('Avoid past opponents',value=True)
-    grouping=st.checkbox('Pair within the same W-L record',value=True,disabled=fmt!='swiss')
-    seed_pairs=st.text_input('Opening seed pairs (optional)','',help='Example: 1-4,2-3. Leave blank for unrestricted round 1.')
-    bo1=st.selectbox('Normal Swiss match',['BO1','BO3','BO5'],index=0)
-    decider=st.selectbox('Qualification/elimination match',['BO1','BO3','BO5'],index=1)
-    knockout_bo=st.selectbox('Knockout match',['BO1','BO3','BO5'],index=2)
-    scale=st.number_input('Elo scale',min_value=50.,max_value=2000.,value=400.)
-    st.header('Analysis controls')
-    samples=st.number_input('Simulations per candidate',100,50000,500,step=100)
-    baseline_samples=st.number_input('Random baseline simulations',100,100000,3000,step=500)
-    cap=st.number_input('Enumeration cap',10,20000,2000,step=100)
-    sampled=st.number_input('Fallback: sampled candidate draws',10,1000,100,step=10)
-    random_seed=st.number_input('Random seed',1,2147483647,42)
-    st.header('Live draw preview')
-    live_preview=st.checkbox('Automatically analyze after each legal drag',value=True)
-    preview_samples=st.number_input('Preview simulations per draw',min_value=50,max_value=5000,value=200,step=50)
-    preview_baseline=st.number_input('Preview baseline simulations',min_value=100,max_value=10000,value=600,step=100)
-    st.caption('Preview is approximate. Full analysis is still available below.')
+    n=st.selectbox(T('Starting teams'),choices,index=choices.index(16))
+    wins=st.number_input(T('Wins to qualify (Swiss)'),1,8,3,disabled=fmt!='swiss')
+    losses=st.number_input(T('Losses to eliminate (Swiss)'),1,8,3,disabled=fmt!='swiss')
+    same=st.selectbox(T('Same-region avoidance'),['off','first','always'],index=1,format_func=lambda v:T(v))
+    rematch=st.checkbox(T('Avoid past opponents'),value=True)
+    grouping=st.checkbox(T('Pair within the same W-L record'),value=True,disabled=fmt!='swiss')
+    seed_pairs=st.text_input(T('Opening seed pairs (optional)'),'',help=T('Example: 1-4,2-3. Leave blank for unrestricted round 1.'))
+    bo1=st.selectbox(T('Normal Swiss match'),['BO1','BO3','BO5'],index=0)
+    decider=st.selectbox(T('Qualification/elimination match'),['BO1','BO3','BO5'],index=1)
+    knockout_bo=st.selectbox(T('Knockout match'),['BO1','BO3','BO5'],index=2)
+    scale=st.number_input(T('Elo scale'),min_value=50.,max_value=2000.,value=400.)
+    st.header(T('Analysis controls'))
+    samples=st.number_input(T('Simulations per candidate'),100,50000,500,step=100)
+    baseline_samples=st.number_input(T('Random baseline simulations'),100,100000,3000,step=500)
+    cap=st.number_input(T('Enumeration cap'),10,20000,2000,step=100)
+    sampled=st.number_input(T('Fallback: sampled candidate draws'),10,1000,100,step=10)
+    random_seed=st.number_input(T('Random seed'),1,2147483647,42)
+    st.header(T('Live draw preview'))
+    live_preview=st.checkbox(T('Automatically analyze after each legal drag'),value=True)
+    preview_samples=st.number_input(T('Preview simulations per draw'),min_value=50,max_value=5000,value=200,step=50)
+    preview_baseline=st.number_input(T('Preview baseline simulations'),min_value=100,max_value=10000,value=600,step=100)
+    st.caption(T('Preview is approximate. Full analysis is still available below.'))
 
-st.markdown('### 1. Teams and regions')
-file=st.file_uploader('Upload a tournament JSON (teams, rules, history, actual_draw)',type='json')
+st.markdown(T('### 1. Teams and regions'))
+file=st.file_uploader(T('Upload a tournament JSON (teams, rules, history, actual_draw)'),type='json')
 if file is not None:
     cfg=json.load(file);st.session_state['upload_cfg']=cfg
 cfg=st.session_state.get('upload_cfg')
-rows=cfg['teams'] if cfg else [{'id':f'T{i+1:02d}','region':f'R{i%4+1}','elo':1500.,'seed':i//4+1} for i in range(n)]
+rows=cfg['teams'] if cfg else [{'id':f'T{i+1:02d}',T('region'):f'R{i%4+1}','elo':1500.,'seed':i//4+1} for i in range(n)]
 if len(rows)!=n:st.info(f'Uploaded {len(rows)} teams; selecting {n} teams will slice or pad the table.')
-rows=(rows+[{'id':f'T{i+1:02d}','region':'R1','elo':1500.,'seed':0} for i in range(len(rows),n)])[:n]
+rows=(rows+[{'id':f'T{i+1:02d}',T('region'):'R1','elo':1500.,'seed':0} for i in range(len(rows),n)])[:n]
 df=st.data_editor(pd.DataFrame(rows),num_rows='fixed',use_container_width=True,hide_index=True,key=f'teams_{n}')
-st.markdown('### 2. Past results / current state')
-st.caption('Enter complete chronological rounds as JSON. Each completed round must include every active team exactly once. Empty list starts from 0-0.')
+st.markdown(T('### 2. Past results / current state'))
+st.caption(T('Enter complete chronological rounds as JSON. Each completed round must include every active team exactly once. Empty list starts from 0-0.'))
 history_default=json.dumps(cfg.get('history',[]) if cfg else [],indent=2,ensure_ascii=False)
-history_txt=st.text_area('History events',history_default,height=135)
-st.markdown('### 3. Real/observed draw (optional)')
+history_txt=st.text_area(T('History events'),history_default,height=135)
+st.markdown(T('### 3. Real/observed draw (optional)'))
 actual_default=json.dumps(cfg.get('actual_draw',[]) if cfg else [],indent=2,ensure_ascii=False)
-actual_txt=st.text_area('Pairs [ [team_id, team_id], ... ]',actual_default,height=100)
+actual_txt=st.text_area(T('Pairs [ [team_id, team_id], ... ]'),actual_default,height=100)
 
-st.markdown('### 4. Drag-and-drop draw editor')
-st.caption('Drag a team onto another team to swap their positions, or click two teams. Invalid swaps are blocked. This works from any round based on the entered history.')
+st.markdown(T('### 4. Drag-and-drop draw editor'))
+st.caption(T('Drag a team onto another team to swap their positions, or click two teams. Invalid swaps are blocked. This works from any round based on the entered history.'))
 editor_state = None
 try:
     def number_bo(x): return int(x[2:])
@@ -72,19 +75,19 @@ try:
         if specified:
             live_pairs=tuple((live_t.ids[a],live_t.ids[b]) for a,b in specified)
             if not live_t.is_legal(live_s,live_pairs):
-                st.warning('The supplied actual draw is invalid; the editor starts with a random legal draw.')
+                st.warning(T('The supplied actual draw is invalid; the editor starts with a random legal draw.'))
                 live_pairs=live_t.random_draw(live_s,Random(int(random_seed)))
         else:live_pairs=live_t.random_draw(live_s,Random(int(random_seed)))
-        editor_state=draw_editor(live_t,live_s,live_pairs,key='drag_editor')
+        editor_state=draw_editor(live_t,live_s,live_pairs,key='drag_editor',lang=lang)
         if editor_state and editor_state.get('pairs'):
             proposed=tuple((live_t.ids[a],live_t.ids[b]) for a,b in editor_state['pairs'])
             if live_t.is_legal(live_s,proposed):
-                st.success('Edited pairing is legal — ready to analyze.')
+                st.success(T('Edited pairing is legal — ready to analyze.'))
             else:
-                st.error('Edited pairing is illegal; no analysis will be run on it.')
+                st.error(T('Edited pairing is illegal; no analysis will be run on it.'))
         else:
-            st.info('Editor is showing the current pairing. Drag a team to change opponents.')
-    else:st.info('Tournament is complete: no remaining draw.')
+            st.info(T('Editor is showing the current pairing. Drag a team to change opponents.'))
+    else:st.info(T('Tournament is complete: no remaining draw.'))
 except Exception as editor_error:
     st.warning(f'Draw editor cannot be initialized: {editor_error}')
 
@@ -106,7 +109,7 @@ if live_preview and editor_state and editor_state.get('pairs'):
     try:
         normalized = tuple(sorted(tuple(sorted((live_t.ids[a], live_t.ids[b]))) for a,b in editor_state['pairs']))
         if not live_t.is_legal(live_s, normalized):
-            st.error('Live preview disabled: illegal draw.')
+            st.error(T('Live preview disabled: illegal draw.'))
         else:
             context = {'teams':[asdict(t) for t in live_t.teams], 'rules':asdict(live_t.rules),
                        'state':{'wins':live_s.wins,'losses':live_s.losses,'met':sorted(live_s.met),
@@ -116,31 +119,30 @@ if live_preview and editor_state and editor_state.get('pairs'):
             report_key=('draw',context_key,normalized,int(preview_samples),int(random_seed))
             preview_base,_=_preview_cached(baseline_key,lambda:live_t.baseline(live_s,int(preview_baseline),int(random_seed)+1))
             preview_report,_=_preview_cached(report_key,lambda:live_t.analyze(live_s,[normalized],int(preview_samples),int(random_seed))[0])
-            st.markdown('### Live impact — edited draw vs random baseline')
-            st.caption('Automatically refreshed on valid drag. Cached results are reused when you return to an earlier pairing. '
-                       'Estimates are preliminary; use full analysis for higher precision.')
+            st.markdown(T('### Live impact — edited draw vs random baseline'))
+            st.caption(T('Automatically refreshed on valid drag. Cached results are reused when you return to an earlier pairing. Estimates are preliminary; use full analysis for higher precision.'))
             live_rows=[]
             for region in live_t.regions:
                 observed=preview_report.region_expected[region]
                 random_mean=preview_base['region_expected'][region]
-                live_rows.append({'Region':region,'Edited expected':observed,'Random expected':random_mean,
-                                  'Impact':observed-random_mean,
-                                  'MC SE (difference, approx)':(preview_report.region_se[region]**2+preview_base['region_se'][region]**2)**0.5})
+                live_rows.append({T('Region'):region,T('Edited expected'):observed,T('Random expected'):random_mean,
+                                  T('Impact'):observed-random_mean,
+                                  T('MC SE (difference, approx)'):(preview_report.region_se[region]**2+preview_base['region_se'][region]**2)**0.5})
             st.dataframe(pd.DataFrame(live_rows).round(4),hide_index=True,use_container_width=True)
-            st.bar_chart(pd.DataFrame(live_rows).set_index('Region')[['Impact']],horizontal=True)
-            with st.expander('Team advancement probabilities for edited draw'):
-                st.dataframe(pd.DataFrame([{'Team':t.id,'Region':t.region,
-                    'Edited':preview_report.team_advance[t.id],
-                    'Random':preview_base['team_advance'][t.id],
-                    'Impact':preview_report.team_advance[t.id]-preview_base['team_advance'][t.id]}
+            st.bar_chart(pd.DataFrame(live_rows).set_index(T('Region'))[[T('Impact')]],horizontal=True)
+            with st.expander(T('Team advancement probabilities for edited draw')):
+                st.dataframe(pd.DataFrame([{T('Team'):t.id,T('Region'):t.region,
+                    T('Edited'):preview_report.team_advance[t.id],
+                    T('Random'):preview_base['team_advance'][t.id],
+                    T('Impact'):preview_report.team_advance[t.id]-preview_base['team_advance'][t.id]}
                     for t in live_t.teams]).round(4),hide_index=True,use_container_width=True)
             if preview_report.unfinished or preview_base['failed']:
-                st.warning('Some simulation paths had no legal next draw. Estimates condition on completed runs; inspect the rule fallback.')
+                st.warning(T('Some simulation paths had no legal next draw. Estimates condition on completed runs; inspect the rule fallback.'))
     except Exception as exc:
         st.warning(f'Live preview unavailable: {type(exc).__name__}: {exc}')
 
-analyze_edited = st.button('Analyze edited draw',type='primary',disabled=not bool(editor_state and editor_state.get('pairs')))
-analyze_all = st.button('Analyze all legal draws')
+analyze_edited = st.button(T('Analyze edited draw'),type='primary',disabled=not bool(editor_state and editor_state.get('pairs')))
+analyze_all = st.button(T('Analyze all legal draws'))
 if analyze_all or analyze_edited:
 
     try:
@@ -161,7 +163,7 @@ if analyze_all or analyze_edited:
                 d=t.random_draw(s,rng);k=tuple(sorted(tuple(sorted(p)) for p in d))
                 if k not in seen:seen.add(k);draws.append(d)
                 if len(draws)>=sampled:break
-        with st.spinner('Running future tournament simulations...'):
+        with st.spinner(T('Running future tournament simulations...')):
             baseline=t.baseline(s,int(baseline_samples),int(random_seed)+1)
             reports=t.analyze(s,[tuple((t.ids[a],t.ids[b]) for a,b in actual)] if analyze_edited else draws,int(samples),int(random_seed))
             real=None
@@ -173,35 +175,35 @@ if analyze_all or analyze_edited:
 
 if 'last_results' in st.session_state:
     t,s,draws,reports,baseline,real,exhaustive=st.session_state['last_results']
-    st.success(f'Current round {s.round} | {len(t.active(s))} active teams | {len(draws)} evaluated draws | '+('Single edited draw (not a global optimum)' if len(reports)==1 and not exhaustive else ('Exhaustive candidate coverage' if exhaustive else 'Sampled candidates: best/worst are approximate')))
+    st.success((f'当前轮次 {s.round} | 剩余 {len(t.active(s))} 队 | 已分析 {len(draws)} 套签表 | ' if lang=='中文' else f'Current round {s.round} | {len(t.active(s))} active teams | {len(draws)} evaluated draws | ')+(('仅分析当前编辑签表（非全局最优）' if lang=='中文' else 'Single edited draw (not a global optimum)') if len(reports)==1 and not exhaustive else (('候选已穷举' if lang=='中文' else 'Exhaustive candidate coverage') if exhaustive else ('候选抽样：最优/最差仅为近似' if lang=='中文' else 'Sampled candidates: best/worst are approximate'))))
     res=[]
     for r in t.regions:
         ranked=t.rank(reports,r);b=baseline['region_expected'][r]
-        row={'Region':r,'Random baseline':b,'Best candidate':ranked[0].region_expected[r] if exhaustive or len(reports)>1 else None,
-             'Worst candidate':ranked[-1].region_expected[r] if exhaustive or len(reports)>1 else None, 'Best minus random':ranked[0].region_expected[r]-b if exhaustive or len(reports)>1 else None}
-        if real: row.update({'Actual':real.region_expected[r],'Actual minus random':real.region_expected[r]-b,'Actual SE':real.region_se[r]})
+        row={T('Region'):r,T('Random baseline'):b,T('Best candidate'):ranked[0].region_expected[r] if exhaustive or len(reports)>1 else None,
+             T('Worst candidate'):ranked[-1].region_expected[r] if exhaustive or len(reports)>1 else None, T('Best minus random'):ranked[0].region_expected[r]-b if exhaustive or len(reports)>1 else None}
+        if real: row.update({T('Actual'):real.region_expected[r],T('Actual minus random'):real.region_expected[r]-b,T('Actual SE'):real.region_se[r]})
         res.append(row)
-    st.markdown('### Region outcomes'); st.dataframe(pd.DataFrame(res).round(4),hide_index=True,use_container_width=True)
-    focal=st.selectbox('Inspect region',t.regions)
+    st.markdown(T('### Region outcomes')); st.dataframe(pd.DataFrame(res).round(4),hide_index=True,use_container_width=True)
+    focal=st.selectbox(T('Inspect region'),t.regions)
     ranked=t.rank(reports,focal)
-    st.markdown('### Best, worst, and observed draws')
+    st.markdown(T('### Best, worst, and observed draws'))
     a,b,c=st.columns(3)
-    for col,label,rep in ((a,'Best',ranked[0]),(b,'Worst',ranked[-1]),(c,'Edited / actual',real)):
+    for col,label,rep in ((a,T('Best'),ranked[0]),(b,T('Worst'),ranked[-1]),(c,T('Edited / actual'),real)):
         with col:
             st.subheader(label)
             if rep:
-                st.metric('Expected qualifying teams',f'{rep.region_expected[focal]:.4f}')
+                st.metric(T('Expected qualifying teams'),f'{rep.region_expected[focal]:.4f}')
                 st.code('\n'.join(f'{x} vs {y}' for x,y in t.draw_names(rep.matches)))
                 st.caption(f'SE ± {rep.region_se[focal]:.4f}; {rep.simulations} feasible simulations; {rep.unfinished} stuck')
-            else:st.caption('No actual draw provided')
-    st.markdown('### Candidate ranking')
+            else:st.caption(T('No actual draw provided'))
+    st.markdown(T('### Candidate ranking'))
     rankdata=[]
     for pos,rep in enumerate(ranked,1):
-        rankdata.append({'rank':pos,'expected':rep.region_expected[focal],'SE':rep.region_se[focal],'matches':'; '.join(a+'-'+b for a,b in t.draw_names(rep.matches))})
+        rankdata.append({T('rank'):pos,T('expected'):rep.region_expected[focal],'SE':rep.region_se[focal],T('matches'):'; '.join(a+'-'+b for a,b in t.draw_names(rep.matches))})
     st.dataframe(pd.DataFrame(rankdata).round(4),hide_index=True,use_container_width=True)
-    st.download_button('Download full candidate CSV',pd.DataFrame(rankdata).to_csv(index=False).encode(),'drawlab_rankings.csv','text/csv')
-    st.markdown('### Team qualifying probabilities')
-    st.dataframe(pd.DataFrame([{'team':tt.id,'region':tt.region,'baseline':baseline['team_advance'][tt.id],
-       'best':ranked[0].team_advance[tt.id],'worst':ranked[-1].team_advance[tt.id],
-       'actual':real.team_advance[tt.id] if real else None} for tt in t.teams]).round(4),hide_index=True,use_container_width=True)
-    st.warning('Monte Carlo estimates are not exact. SE describes sampling uncertainty, not Elo-model accuracy. If simulations get stuck, change the matching fallback rules; stuck trajectories are reported rather than quietly repaired.')
+    st.download_button(T('Download full candidate CSV'),pd.DataFrame(rankdata).to_csv(index=False).encode(),'drawlab_rankings.csv','text/csv')
+    st.markdown(T('### Team qualifying probabilities'))
+    st.dataframe(pd.DataFrame([{T('team'):tt.id,T('region'):tt.region,T('baseline'):baseline['team_advance'][tt.id],
+       T('best'):ranked[0].team_advance[tt.id],T('worst'):ranked[-1].team_advance[tt.id],
+       T('actual'):real.team_advance[tt.id] if real else None} for tt in t.teams]).round(4),hide_index=True,use_container_width=True)
+    st.warning('蒙特卡洛为近似估计；标准误仅反映抽样误差，不表示 Elo 模型准确度。无法继续配对的模拟会单独报告，不会悄悄修改规则。' if lang=='中文' else 'Monte Carlo estimates are not exact. SE describes sampling uncertainty, not Elo-model accuracy. If simulations get stuck, change the matching fallback rules; stuck trajectories are reported rather than quietly repaired.')
