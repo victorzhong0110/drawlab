@@ -6,6 +6,7 @@ import streamlit as st
 import pandas as pd
 from engine import Team,Rules,Tournament,NoLegalDraw
 from editor import draw_editor
+from studio import studio, complete_draws, random_completion
 from elo_calibration import estimate_scale
 from localize import tr, options
 
@@ -71,7 +72,7 @@ st.markdown(T('### 3. Real/observed draw (optional)'))
 actual_default=json.dumps(cfg.get('actual_draw',[]) if cfg else [],indent=2,ensure_ascii=False)
 actual_txt=st.text_area(T('Pairs [ [team_id, team_id], ... ]'),actual_default,height=100)
 
-st.markdown(T('### 4. Drag-and-drop draw editor'))
+st.markdown(T('### 4. Legacy team-swap editor / 旧版对阵交换器'))
 st.caption(T('Drag a team onto another team to swap their positions, or click two teams. Invalid swaps are blocked. This works from any round based on the entered history.'))
 editor_state = None
 try:
@@ -83,6 +84,63 @@ try:
     live_teams=[Team(str(x['id']),str(x['region']),float(x['elo']),int(x.get('seed',0))) for x in df.to_dict('records')]
     live_t=Tournament(live_teams,live_rules)
     live_s=live_t.from_history(json.loads(history_txt))
+    st.markdown('### Swiss Draw Studio / 瑞士轮抽签沙盘')
+    st.caption('上方队伍池 → 下方轮次签位；拖入后锁定部分对阵，点击分析所有剩余合法补全。' if lang=='中文' else 'Drag teams from top pool into lower bracket slots; analyze all remaining legal completions.')
+    if not live_t.completed(live_s):
+        start=live_t.random_draw(live_s,Random(int(random_seed)))
+        studio_state=studio(live_t,live_s,start,lang=lang)
+        if studio_state and studio_state.get('slots'):
+            lock_names=studio_state.get('locked',[])
+            try:
+                locked=tuple((live_t.ids[a],live_t.ids[b]) for a,b in lock_names)
+                if not locked or not all(live_t.eligible(live_s,a,b) for a,b in locked):
+                    st.caption(('尚未锁定对阵' if not locked else '存在非法锁定对阵') if lang=='中文' else ('No locked pairs yet' if not locked else 'Invalid locked pairs'))
+                col_a,col_b=st.columns([1,2])
+                with col_a:
+                    st.metric('Locked matches / 锁定场次',len(locked))
+                with col_b:
+                    studio_run=st.button('Analyze Remaining Draws / 分析剩余合法签表',type='primary',key='studio_analyze')
+                if studio_run:
+                    if not locked or all(live_t.eligible(live_s,a,b) for a,b in locked):
+                        try:
+                            completions=complete_draws(live_t,live_s,locked,limit=int(cap))
+                            exhaustive=True
+                        except OverflowError:
+                            rng=Random(int(random_seed)); uniq={}
+                            for _ in range(int(sampled)*3):
+                                draw=random_completion(live_t,live_s,locked,rng)
+                                canon=tuple(sorted(tuple(sorted(p)) for p in draw));uniq[canon]=draw
+                                if len(uniq)>=int(sampled):break
+                            completions=list(uniq.values());exhaustive=False
+                        except NoLegalDraw as err:
+                            st.error(str(err));completions=[];exhaustive=False
+                        if completions:
+                            rep=live_t.analyze(live_s,draws=completions,samples=int(samples),seed=int(random_seed))
+                            base=live_t.baseline(live_s,samples=int(baseline_samples),seed=int(random_seed)+51)
+                            st.session_state['studio_output']=(rep,base,exhaustive,tuple(locked),live_s.round)
+            except (ValueError,KeyError) as err:st.error(str(err))
+    else:st.info('赛事已结束 / Tournament complete')
+    if st.session_state.get('studio_output'):
+        reps,base,exhaustive,stored_locked,stored_round=st.session_state['studio_output']
+        if stored_round==live_s.round:
+            st.caption(('全部合法补全已穷举' if exhaustive else '合法补全抽样，最优/最差仅为候选结果') if lang=='中文' else ('All legal completions enumerated' if exhaustive else 'Sampled completions, candidate extrema only'))
+            region=st.selectbox('Focus region / 目标赛区',live_t.regions,key='studio_region')
+            ranked=live_t.rank(reps,region)
+            st.metric('Legal completions evaluated / 已分析合法补全',len(reps))
+            chart=pd.DataFrame([{'Region':r,'Random baseline':base['region_expected'][r], 'Best candidate':max(q.region_expected[r] for q in reps),'Worst candidate':min(q.region_expected[r] for q in reps)} for r in live_t.regions]).set_index('Region')
+            st.markdown('#### Region expectation / 赛区晋级期望')
+            st.bar_chart(chart)
+            st.markdown('#### Regional draw impact / 赛区抽签收益')
+            impacts=pd.DataFrame([{'Region':r,'Impact':ranked[0].region_expected[r]-base['region_expected'][r]} for r in live_t.regions]).set_index('Region')
+            st.bar_chart(impacts)
+            st.markdown('#### Team qualification / 单队晋级概率')
+            tp=pd.DataFrame([{'Team':tt.id,'Random':base['team_advance'][tt.id], 'Best for '+region:ranked[0].team_advance[tt.id], 'Worst for '+region:ranked[-1].team_advance[tt.id]} for tt in live_t.teams]).set_index('Team')
+            st.bar_chart(tp)
+            st.markdown('#### Remaining legal draw value distribution / 剩余签表价值分布')
+            values=pd.DataFrame({'Expected qualifying teams':[r.region_expected[region] for r in reps]})
+            st.bar_chart(values)
+            st.code('\n'.join(a+' vs '+b for a,b in live_t.draw_names(ranked[0].matches)))
+            st.caption('Best remaining completion / 最优剩余补全：图中价值为抽样估计；对局规则和模拟失败状态沿用核心引擎。')
     if not live_t.completed(live_s):
         specified=json.loads(actual_txt)
         if specified:

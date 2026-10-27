@@ -64,3 +64,11 @@ In the Streamlit sidebar, choose **Language / 语言** → **中文** (default) 
 ## S16 example and automatic Elo-scale calibration
 
 Use `s16_worlds_2026.json` in the upload control. The app now loads team counts, seed rules, series rules, rematch avoidance, ratings and history from the file on first import. The Elo rating scale can be auto-fitted when JSON contains at least 20 **BO1/map-level** records under `calibration_matches` with keys `a`, `b`, `winner` (and optional `best_of: 1`, `weight`). Series outcomes without map-level results are skipped. Without sufficient training results the UI clearly reports fallback to the JSON's `rules.rating_scale`, normally 400; scores alone cannot identify a reasonable scale. The S16 file uses previously discussed LoL Pro Elo scores, **not a verified pre-event Elo snapshot**. The calibration helper estimates probability scale only, it does not re-estimate individual team Elo ratings.
+
+## v0.6 Swiss Draw Studio / 瑞士轮抽签沙盘
+
+- `studio_frontend/index.html`: native Streamlit component with a **team pool above a multi-round bracket**. Drag a team into the current round's slot, or click a team and then a slot. Partial matches remain uncommitted; complete pairs become locked candidates.
+- `studio.py`: validates partial matchings, enumerates **all legal completions** up to the configured cap, or samples legal completions uniformly conditional on locked pairs using exact continuation counts.
+- The **Analyze Remaining Draws** button scores all feasible completions or a sampled subset, and draws Streamlit region-expectation, impact, team qualification, and remaining-draw-value charts. Old editor is retained below as a legacy compatibility path.
+- Future rounds show **placeholders until results are entered**. The tool does not assert that future teams or results are known.
+- Large candidate sets and Monte Carlo outputs remain approximate. The displayed best/worst are candidate extrema, not global guarantees when sampled. UI drag interaction has not been browser-verified.
